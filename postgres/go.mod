@@ -1,4 +1,4 @@
-module github.com/go-raptor/connector/postgres/v0.2.0
+module github.com/go-raptor/connector/postgres
 
 go 1.22
 
