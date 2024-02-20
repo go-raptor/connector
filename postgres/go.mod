@@ -1,6 +1,6 @@
-module github.com/go-raptor/connector/postgres
+module github.com/go-raptor/connector/postgres/v0.2.0
 
-go 1.22.0
+go 1.22
 
 require (
 	gorm.io/driver/postgres v1.5.6

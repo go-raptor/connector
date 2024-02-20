@@ -1,4 +1,4 @@
-module github.com/go-raptor/connector/sqlite
+module github.com/go-raptor/connector/sqlite/v0.2.0
 
 go 1.22
 
