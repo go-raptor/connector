@@ -24,7 +24,7 @@ func (c *PostgresConnector) Connect(config interface{}) (*gorm.DB, error) {
 
 	hostField := val.FieldByName("Host")
 	portField := val.FieldByName("Port")
-	userField := val.FieldByName("User")
+	userField := val.FieldByName("Username")
 	passwordField := val.FieldByName("Password")
 	nameField := val.FieldByName("Name")
 
