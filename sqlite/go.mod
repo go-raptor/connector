@@ -1,6 +1,6 @@
 module github.com/go-raptor/connector/sqlite
 
-go 1.22.0
+go 1.22
 
 require (
 	gorm.io/driver/sqlite v1.5.5
