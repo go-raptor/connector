@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	gorm.io/driver/postgres v1.5.7
-	gorm.io/gorm v1.25.8
+	gorm.io/gorm v1.25.9
 )
 
 require (
