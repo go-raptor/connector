@@ -12,17 +12,27 @@ import (
 )
 
 type PostgresConnector struct {
+	migrations Migrations
+	config     interface{}
+	conn       *bun.DB
 }
 
-func NewPostgresConnector() *PostgresConnector {
-	return &PostgresConnector{}
+func NewPostgresConnector(config interface{}, migrations map[int]Migration) *PostgresConnector {
+	return &PostgresConnector{
+		config:     config,
+		migrations: migrations,
+	}
 }
 
-func (c *PostgresConnector) Connect(config interface{}) (*bun.DB, error) {
-	val := reflect.ValueOf(config)
+func (c *PostgresConnector) Conn() any {
+	return c.conn
+}
+
+func (c *PostgresConnector) Init() error {
+	val := reflect.ValueOf(c.config)
 
 	if val.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("input is not a struct")
+		return fmt.Errorf("input is not a struct")
 	}
 
 	hostField := val.FieldByName("Host")
@@ -41,20 +51,24 @@ func (c *PostgresConnector) Connect(config interface{}) (*bun.DB, error) {
 
 	configPgxPool, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse DSN: %w", err)
+		return fmt.Errorf("failed to parse DSN: %w", err)
 	}
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), configPgxPool)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create connection pool: %w", err)
+		return fmt.Errorf("failed to create connection pool: %w", err)
 	}
 
 	sqldb := stdlib.OpenDBFromPool(pool)
 	db := bun.NewDB(sqldb, pgdialect.New())
 
 	if err := db.PingContext(context.Background()); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
+		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return db, nil
+	c.conn = db
+	if err := c.migrate(); err != nil {
+		return fmt.Errorf("failed to migrate: %w", err)
+	}
+	return nil
 }
