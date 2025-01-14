@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/go-raptor/connector"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/uptrace/bun"
@@ -15,9 +16,10 @@ type PostgresConnector struct {
 	migrations Migrations
 	config     interface{}
 	conn       *bun.DB
+	migrator   *PostgresMigrator
 }
 
-func NewPostgresConnector(config interface{}, migrations map[int]Migration) *PostgresConnector {
+func NewPostgresConnector(config interface{}, migrations Migrations) connector.DatabaseConnector {
 	return &PostgresConnector{
 		config:     config,
 		migrations: migrations,
@@ -26,6 +28,10 @@ func NewPostgresConnector(config interface{}, migrations map[int]Migration) *Pos
 
 func (c *PostgresConnector) Conn() any {
 	return c.conn
+}
+
+func (c *PostgresConnector) Migrator() connector.Migrator {
+	return c.migrator
 }
 
 func (c *PostgresConnector) Init() error {
@@ -67,8 +73,12 @@ func (c *PostgresConnector) Init() error {
 	}
 
 	c.conn = db
-	if err := c.migrate(); err != nil {
+
+	c.migrator = NewPostgresMigrator(c.conn, c.migrations)
+
+	if err := c.migrator.Up(); err != nil {
 		return fmt.Errorf("failed to migrate: %w", err)
 	}
+
 	return nil
 }

@@ -1,8 +1,9 @@
 module github.com/go-raptor/connector/bun/postgres
 
-go 1.23.0
+go 1.23.4
 
 require (
+	github.com/go-raptor/connector v1.0.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/uptrace/bun v1.2.8
 	github.com/uptrace/bun/dialect/pgdialect v1.2.8
