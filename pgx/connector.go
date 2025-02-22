@@ -10,14 +10,16 @@ import (
 )
 
 type PgxConnector struct {
-	config   interface{}
-	pool     *pgxpool.Pool
-	migrator connector.Migrator
+	config     interface{}
+	pool       *pgxpool.Pool
+	migrator   connector.Migrator
+	migrations Migrations
 }
 
-func NewPgxConnector(config interface{}) connector.DatabaseConnector {
+func NewPgxConnector(config interface{}, migrations Migrations) connector.DatabaseConnector {
 	return &PgxConnector{
-		config: config,
+		config:     config,
+		migrations: migrations,
 	}
 }
 
@@ -65,7 +67,16 @@ func (c *PgxConnector) Init() error {
 	}
 
 	c.pool = pool
-	c.migrator = NewPgxMigrator(pool)
+
+	migrator := NewPgxMigrator(pool)
+	for version, migration := range c.migrations {
+		migrator.AddMigration(version, migration)
+	}
+	c.migrator = migrator
+
+	if err := c.migrator.Up(); err != nil {
+		return fmt.Errorf("failed to run migrations: %w", err)
+	}
 
 	return nil
 }
